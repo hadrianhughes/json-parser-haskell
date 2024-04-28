@@ -1,6 +1,7 @@
 module Main where
 
 import Options.Applicative
+import Text.Pretty.Simple
 import JsonParser
 
 runOpts :: FilePath -> IO ()
@@ -9,7 +10,7 @@ runOpts fp = do
   let result = runParser jsonRoot json
   case result of
     Left e  -> putStrLn ("Parse failed: " <> show e)
-    Right x -> putStrLn (show x)
+    Right x -> pPrint x
 
 main :: IO ()
 main = runOpts =<< execParser (filePath `withInfo` infoString)

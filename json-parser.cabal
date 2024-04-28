@@ -25,6 +25,7 @@ executable json-parser
       base ^>=4.17.2.1
       , json-parser
       , optparse-applicative
+      , pretty-simple
     hs-source-dirs:   app
     default-language: Haskell2010
 
