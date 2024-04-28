@@ -110,3 +110,6 @@ jsonObject = ObjectValue <$> (M.fromList <$> braces (kvPair `sepBy` comma))
 
 jsonValue :: Parser JsonValue
 jsonValue = jsonNull <|> jsonBoolean <|> jsonNumber <|> jsonString <|> jsonArray <|> jsonObject
+
+jsonRoot :: Parser JsonValue
+jsonRoot = jsonObject <|> jsonArray
