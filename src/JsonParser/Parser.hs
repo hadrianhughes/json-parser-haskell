@@ -1,6 +1,7 @@
 module JsonParser.Parser where
 
 import Control.Applicative.Combinators
+import Data.Functor
 
 newtype Parser a = Parser { parse :: String -> Maybe (a, String) }
 
@@ -43,3 +44,6 @@ braces = between (char '{') (char '}')
 
 quotes :: Parser a -> Parser a
 quotes = between (char '"') (char '"')
+
+comma :: Parser ()
+comma = void $ char ','
