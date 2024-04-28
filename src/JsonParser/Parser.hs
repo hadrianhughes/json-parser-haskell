@@ -63,3 +63,6 @@ comma = void $ char ','
 
 null :: Parser JsonValue
 null = token "null" *> pure NullValue
+
+boolean :: Parser JsonValue
+boolean = BooleanValue <$> (token "true"  *> pure True <|> token "false" *> pure False)
