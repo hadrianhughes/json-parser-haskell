@@ -1,5 +1,6 @@
 module JsonParser.Parser where
 
+import Control.Applicative
 import Control.Applicative.Combinators
 import Data.Functor
 import JsonParser.Json
@@ -27,6 +28,17 @@ instance Applicative Parser where
         case p2 input' of
           Nothing           -> Nothing
           Just (x, input'') -> Just (f x, input'')
+
+instance Alternative Parser where
+  empty = Parser $ \_ -> Nothing
+  (Parser p1) <|> (Parser p2) = Parser $ \input ->
+    case p1 input of
+      Just (x, input') -> Just (x, input')
+      Nothing ->
+        case p2 input of
+          Nothing -> Nothing
+          Just (x, input') -> Just (x, input')
+
 
 char :: Char -> Parser Char
 char c = Parser $ \input ->
