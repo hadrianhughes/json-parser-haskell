@@ -7,46 +7,53 @@ import qualified Data.Map as M
 import           JsonParser.Json
 import           JsonParser.Utils
 
-newtype Parser a = Parser { parse :: String -> Maybe (a, String) }
+data ParseError = EndOfInput
+                | Unexpected Char
+                | Empty
+                deriving Show
 
-runParser :: Parser a -> String -> Maybe a
+newtype Parser a = Parser { parse :: String -> Either ParseError (a, String) }
+
+runParser :: Parser a -> String -> Either ParseError a
 runParser (Parser p) input =
   case p input of
-    Nothing     -> Nothing
-    Just (x, _) -> Just x
+    Left e       -> Left e
+    Right (x, _) -> Right x
 
 instance Functor Parser where
   fmap f (Parser p) = Parser $ \input ->
     case p input of
-      Nothing          -> Nothing
-      Just (x, input') -> Just (f x, input')
+      Left e            -> Left e
+      Right (x, input') -> Right (f x, input')
 
 instance Applicative Parser where
-  pure x = Parser $ \input -> Just (x, input)
+  pure x = Parser $ \input -> Right (x, input)
   (Parser p1) <*> (Parser p2) = Parser $ \input ->
     case p1 input of
-      Nothing          -> Nothing
-      Just (f, input') ->
+      Left e            -> Left e
+      Right (f, input') ->
         case p2 input' of
-          Nothing           -> Nothing
-          Just (x, input'') -> Just (f x, input'')
+          Left e             -> Left e
+          Right (x, input'') -> Right (f x, input'')
 
 instance Alternative Parser where
-  empty = Parser $ \_ -> Nothing
+  empty = Parser $ \_ -> Left Empty
   (Parser p1) <|> (Parser p2) = Parser $ \input ->
     case p1 input of
-      Just (x, input') -> Just (x, input')
-      Nothing ->
+      Right (x, input') -> Right (x, input')
+      Left _ ->
         case p2 input of
-          Nothing -> Nothing
-          Just (x, input') -> Just (x, input')
+          Left e            -> Left e
+          Right (x, input') -> Right (x, input')
 
 
 satisfy :: (Char -> Bool) -> Parser Char
 satisfy pred = Parser $ \input ->
   case input of
-    (x:xs) | pred x -> Just (x, xs)
-    _               -> Nothing
+    (x:xs)
+      | pred x    -> Right (x, xs)
+      | otherwise -> Left (Unexpected x)
+    []            -> Left EndOfInput
 
 sc :: Parser ()
 sc = void $ many $ satisfy (`elem` " \t")

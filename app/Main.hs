@@ -8,8 +8,8 @@ runOpts fp = do
   json <- readFile fp
   let result = runParser jsonRoot json
   case result of
-    Nothing -> putStrLn "Parse failed."
-    Just x  -> putStrLn (show x)
+    Left e  -> putStrLn ("Parse failed: " <> show e)
+    Right x -> putStrLn (show x)
 
 main :: IO ()
 main = runOpts =<< execParser (filePath `withInfo` infoString)
