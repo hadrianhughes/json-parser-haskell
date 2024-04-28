@@ -1,0 +1,7 @@
+{
+  "person": {
+    "name": "Joe Bloggs",
+    "age": 70,
+    "retired": true
+  }
+}
