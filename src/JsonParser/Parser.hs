@@ -48,17 +48,23 @@ satisfy pred = Parser $ \input ->
     (x:xs) | pred x -> Just (x, xs)
     _               -> Nothing
 
+sc :: Parser ()
+sc = void $ many $ satisfy (`elem` " \t")
+
+sc' :: Parser ()
+sc' = void $ many $ satisfy (`elem` " \t\n")
+
 char :: Char -> Parser Char
 char c = satisfy (== c)
 
 token :: String -> Parser String
-token t = sequenceA $ map char t
+token t = sc *> sequenceA (map char t)
 
 brackets :: Parser a -> Parser a
-brackets = between (char '[') (char ']')
+brackets = between (char '[' <* sc') (sc' *> char ']')
 
 braces :: Parser a -> Parser a
-braces = between (char '{') (char '}')
+braces = between (char '{' <* sc') (sc' *> char '}')
 
 quotes :: Parser a -> Parser a
 quotes = between (char '"') (char '"')
@@ -100,13 +106,13 @@ jsonString :: Parser JsonValue
 jsonString = StringValue <$> string
 
 jsonArray :: Parser JsonValue
-jsonArray = ArrayValue <$> brackets (jsonValue `sepBy` comma)
+jsonArray = ArrayValue <$> brackets (jsonValue `sepBy` (comma *> sc'))
 
 jsonObject :: Parser JsonValue
-jsonObject = ObjectValue <$> (M.fromList <$> braces (kvPair `sepBy` comma))
+jsonObject = ObjectValue <$> (M.fromList <$> braces (kvPair `sepBy` (comma *> sc')))
   where
     kvPair :: Parser (String, JsonValue)
-    kvPair = pair <$> string <*> (colon *> jsonValue)
+    kvPair = pair <$> string <*> (sc *> colon *> sc *> jsonValue)
 
 jsonValue :: Parser JsonValue
 jsonValue = jsonNull <|> jsonBoolean <|> jsonNumber <|> jsonString <|> jsonArray <|> jsonObject
