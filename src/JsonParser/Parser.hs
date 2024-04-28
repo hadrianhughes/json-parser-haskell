@@ -61,6 +61,9 @@ braces = between (char '{') (char '}')
 quotes :: Parser a -> Parser a
 quotes = between (char '"') (char '"')
 
+dot :: Parser ()
+dot = void $ char '.'
+
 comma :: Parser ()
 comma = void $ char ','
 
@@ -69,3 +72,18 @@ null = token "null" *> pure NullValue
 
 boolean :: Parser JsonValue
 boolean = BooleanValue <$> (token "true"  *> pure True <|> token "false" *> pure False)
+
+digit :: Parser Char
+digit = satisfy (`elem` "0123456789")
+
+int :: Parser NumLit
+int = IntLit . read <$> some digit
+
+float :: Parser NumLit
+float = FloatLit <$> (constructDouble <$> some digit <*> (dot *> some digit))
+  where
+    constructDouble :: String -> String -> Double
+    constructDouble l r = read $ l <> "." <> r
+
+number :: Parser JsonValue
+number = NumberValue <$> (float <|> int)
