@@ -40,11 +40,14 @@ instance Alternative Parser where
           Just (x, input') -> Just (x, input')
 
 
-char :: Char -> Parser Char
-char c = Parser $ \input ->
+satisfy :: (Char -> Bool) -> Parser Char
+satisfy pred = Parser $ \input ->
   case input of
-    (x:xs) | x == c -> Just (x, xs)
+    (x:xs) | pred x -> Just (x, xs)
     _               -> Nothing
+
+char :: Char -> Parser Char
+char c = satisfy (== c)
 
 token :: String -> Parser String
 token t = sequenceA $ map char t
