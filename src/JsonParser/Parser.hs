@@ -13,3 +13,13 @@ instance Functor Parser where
     case p input of
       Nothing          -> Nothing
       Just (x, input') -> Just (f x, input')
+
+instance Applicative Parser where
+  pure x = Parser $ \input -> Just (x, input)
+  (Parser p1) <*> (Parser p2) = Parser $ \input ->
+    case p1 input of
+      Nothing          -> Nothing
+      Just (f, input') ->
+        case p2 input' of
+          Nothing           -> Nothing
+          Just (x, input'') -> Just (f x, input'')
