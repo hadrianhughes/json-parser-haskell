@@ -1,9 +1,11 @@
 module JsonParser.Parser where
 
-import Control.Applicative
-import Control.Applicative.Combinators
-import Data.Functor
-import JsonParser.Json
+import           Control.Applicative
+import           Control.Applicative.Combinators
+import           Data.Functor
+import qualified Data.Map as M
+import           JsonParser.Json
+import           JsonParser.Utils
 
 newtype Parser a = Parser { parse :: String -> Maybe (a, String) }
 
@@ -67,6 +69,9 @@ dot = void $ char '.'
 comma :: Parser ()
 comma = void $ char ','
 
+colon :: Parser ()
+colon = void $ char ':'
+
 jsonNull :: Parser JsonValue
 jsonNull = token "null" *> pure NullValue
 
@@ -85,14 +90,23 @@ float = FloatLit <$> (constructDouble <$> some digit <*> (dot *> some digit))
     constructDouble :: String -> String -> Double
     constructDouble l r = read $ l <> "." <> r
 
+string :: Parser String
+string = quotes (many $ satisfy (/= '"'))
+
 jsonNumber :: Parser JsonValue
 jsonNumber = NumberValue <$> (float <|> int)
 
 jsonString :: Parser JsonValue
-jsonString = StringValue <$> many (satisfy (/= '"'))
+jsonString = StringValue <$> string
 
 jsonArray :: Parser JsonValue
 jsonArray = ArrayValue <$> brackets (jsonValue `sepBy` comma)
 
+jsonObject :: Parser JsonValue
+jsonObject = ObjectValue <$> (M.fromList <$> braces (kvPair `sepBy` comma))
+  where
+    kvPair :: Parser (String, JsonValue)
+    kvPair = pair <$> string <*> (colon *> jsonValue)
+
 jsonValue :: Parser JsonValue
-jsonValue = jsonNull <|> jsonBoolean <|> jsonNumber <|> jsonString <|> jsonArray
+jsonValue = jsonNull <|> jsonBoolean <|> jsonNumber <|> jsonString <|> jsonArray <|> jsonObject
