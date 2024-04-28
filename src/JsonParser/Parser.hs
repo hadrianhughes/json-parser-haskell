@@ -23,3 +23,12 @@ instance Applicative Parser where
         case p2 input' of
           Nothing           -> Nothing
           Just (x, input'') -> Just (f x, input'')
+
+char :: Char -> Parser Char
+char c = Parser $ \input ->
+  case input of
+    (x:xs) | x == c -> Just (x, xs)
+    _               -> Nothing
+
+token :: String -> Parser String
+token t = sequenceA $ map char t
