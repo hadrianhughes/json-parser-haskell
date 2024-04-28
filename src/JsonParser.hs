@@ -1,3 +1,8 @@
-module JsonParser where
+module JsonParser
+  ( Parser
+  , runParser
+  , jsonRoot
+  )
+where
 
-import JsonParser.Json
+import JsonParser.Parser
