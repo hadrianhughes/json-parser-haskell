@@ -2,6 +2,7 @@ module JsonParser.Parser where
 
 import Control.Applicative.Combinators
 import Data.Functor
+import JsonParser.Json
 
 newtype Parser a = Parser { parse :: String -> Maybe (a, String) }
 
@@ -47,3 +48,6 @@ quotes = between (char '"') (char '"')
 
 comma :: Parser ()
 comma = void $ char ','
+
+null :: Parser JsonValue
+null = token "null" *> pure NullValue
