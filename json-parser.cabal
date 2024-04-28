@@ -31,6 +31,7 @@ library
   exposed-modules:
     JsonParser
     JsonParser.Json
+    JsonParser.Parser
   hs-source-dirs:
     src
   build-depends:
