@@ -1,5 +1,7 @@
 module JsonParser.Parser where
 
+import Control.Applicative.Combinators
+
 newtype Parser a = Parser { parse :: String -> Maybe (a, String) }
 
 runParser :: Parser a -> String -> Maybe a
@@ -32,3 +34,12 @@ char c = Parser $ \input ->
 
 token :: String -> Parser String
 token t = sequenceA $ map char t
+
+brackets :: Parser a -> Parser a
+brackets = between (char '[') (char ']')
+
+braces :: Parser a -> Parser a
+braces = between (char '{') (char '}')
+
+quotes :: Parser a -> Parser a
+quotes = between (char '"') (char '"')
