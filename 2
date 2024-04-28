@@ -89,4 +89,4 @@ number :: Parser JsonValue
 number = NumberValue <$> (float <|> int)
 
 string :: Parser JsonValue
-string = StringValue <$> many (satisfy (/= '"'))
+string = StringValue <$> quotes $ satisfy (/= '"')
